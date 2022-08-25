@@ -37,8 +37,10 @@ module OpenC3
       "    READ_CONVERSION #{@item_name} #{@coeffs.join(' ')}\n"
     end
 
-    def as_json
-      { 'class' => self.class.name.to_s, 'params' => [@item_name].concat(@coeffs) }
+    def as_json(*a)
+      result = super(*a)
+      result['params'] = [@item_name].concat(@coeffs)
+      result
     end
   end
 end
