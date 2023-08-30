@@ -1,5 +1,8 @@
 <% raise "Packet must be at least 4 bytes" if num_tlm_bytes_per_packet.to_i < 4 %>
 <% avg_item_num_bytes = (num_tlm_bytes_per_packet.to_f / num_tlm_items_per_packet.to_f).round %>
+<% if avg_item_num_bytes <= 0 %>
+<%   avg_item_num_bytes = 1 %>
+<% end %>
 <% num_int1 = 0; num_int8 = 0; num_int16 = 0; num_int32 = 0; num_flt32 = 0; num_flt64 = 0; num_string = 0; num_block = 0; %>
 <% packet_num_bytes = 4 %>
 <% packet_num_items = 1 %>
