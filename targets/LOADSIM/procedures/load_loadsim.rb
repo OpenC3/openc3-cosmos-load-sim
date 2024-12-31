@@ -1,21 +1,3 @@
-# ENV['OPENC3_API_PASSWORD'] = 'password'
-ENV['OPENC3_API_USER'] = 'admin'
-ENV['OPENC3_API_PASSWORD'] = 'admin'
-$api_server.instance_variable_get(:@json_drb).instance_variable_set(:@authentication, $api_server.generate_auth())
-
-def install_plugin(gem_name:, variables:, plugin_txt_lines: nil, scope: $openc3_scope)
-  endpoint = "/openc3-api/plugins/install/#{gem_name}"
-  OpenC3::Logger.info "Installing plugin #{gem_name}"
-  plugin_hash = {
-    "name": gem_name,
-    "variables": variables}
-  plugin_hash["plugin_txt_lines"] = plugin_txt_lines if plugin_txt_lines
-  response = $api_server.request('post', endpoint, data: { plugin_hash: plugin_hash.to_json }, json: true, scope: scope)
-  if response.nil? || response.code != 200
-    raise "Failed to install plugin #{gem_name} with code #{response.code}"
-  end
-end
-
 def install_loadsim(target_name, gem_version, scope: $openc3_scope)
   gem_name = "openc3-load-sim-#{gem_version}.gem"
   variables = {
@@ -46,12 +28,23 @@ def install_loadsim(target_name, gem_version, scope: $openc3_scope)
     "",
     "INTERFACE INT_#{target_name} simulated_target_interface.rb sim_loadsim.rb",
     "  MAP_TARGET #{target_name}"]
+  plugin_hash = {
+    "name": gem_name,
+    "variables": variables,
+    "plugin_txt_lines": plugin_txt_lines,
+  }
 
-  install_plugin(gem_name: gem_name, variables: variables, plugin_txt_lines: plugin_txt_lines, scope: scope)
+  # Switch to use the actual api once it is fully working
+  # plugin_install_phase2(plugin_hash, update: false, scope: $openc3_scope)
+  response = $api_server.request('post', "/openc3-api/plugins/install/#{gem_name}", data: { plugin_hash: plugin_hash.to_json }, json: true, scope: scope)
+  if response.nil? || response.code != 200
+    raise "Failed to install plugin #{gem_name} with code #{response.code}"
+  end
 end
 
-x = 1
-# (1..10).each do |x|
+first_instance_num = 1
+last_instance_num = 4
+(first_instance_num..last_instance_num).each do |x|
   install_loadsim("LOADSIM#{x}", "1.0.0")
   wait 5
-# end
+end
